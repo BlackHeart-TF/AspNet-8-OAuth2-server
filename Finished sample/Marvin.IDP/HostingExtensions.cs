@@ -33,24 +33,31 @@ internal static class HostingExtensions
 
         var azureCredential = new DefaultAzureCredential();
 
-        builder.Services.AddDataProtection()
-            .PersistKeysToAzureBlobStorage(
-                new Uri(builder.Configuration["DataProtection:Keys"]),
-                azureCredential)
-            .ProtectKeysWithAzureKeyVault(
-                new Uri(builder.Configuration["DataProtection:ProtectionKeyForKeys"]),
-                azureCredential);
-        var secretClient = new SecretClient(
-               new Uri(builder.Configuration["KeyVault:RootUri"]),
-               azureCredential);
+        //builder.Services.AddDataProtection()
+        //    .PersistKeysToAzureBlobStorage(
+        //        new Uri(builder.Configuration["DataProtection:Keys"]),
+        //        azureCredential)
+        //    .ProtectKeysWithAzureKeyVault(
+        //        new Uri(builder.Configuration["DataProtection:ProtectionKeyForKeys"]),
+        //        azureCredential);
+        //var secretClient = new SecretClient(
+        //       new Uri(builder.Configuration["KeyVault:RootUri"]),
+        //       azureCredential);
 
-        var secretResponse = secretClient.GetSecret(
-            builder.Configuration["KeyVault:CertificateName"]);
+        //var secretResponse = secretClient.GetSecret(
+        //    builder.Configuration["KeyVault:CertificateName"]);
 
-        var signingCertificate = new X509Certificate2(
-          Convert.FromBase64String(secretResponse.Value.Value),
-          (string)null,
-          X509KeyStorageFlags.MachineKeySet);
+        //var signingCertificate = new X509Certificate2(
+        //  Convert.FromBase64String(secretResponse.Value.Value),
+        //  (string)null,
+        //  X509KeyStorageFlags.MachineKeySet);
+
+        var store = new X509Store(StoreName.AuthRoot, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadOnly);
+
+        var signingCertificate = store.Certificates.Find(X509FindType.FindByThumbprint, "e1b784b282e59921a729f630704ef5dadbcc8d22", true).FirstOrDefault();
+
+        store.Close();
 
         // uncomment if you want to add a UI
         builder.Services.AddRazorPages();
@@ -87,45 +94,61 @@ internal static class HostingExtensions
             .AddConfigurationStore(options =>
             {
                 options.ConfigureDbContext = optionsBuilder =>
-                optionsBuilder.UseSqlServer(
+                //optionsBuilder.UseSqlServer(
+                //    builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
+                //          sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
+                optionsBuilder.UseMySql(
                     builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
-                          sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
+                    new MariaDbServerVersion("15.1"),
+                    mysqlOptions =>
+                    {
+                        mysqlOptions.MigrationsAssembly(migrationsAssembly);
+                        // You can configure MySQL-specific options here
+                    });
             })
             .AddConfigurationStoreCache()
             .AddOperationalStore(options =>
             {
                 options.ConfigureDbContext = optionsBuilder =>
-                optionsBuilder.UseSqlServer(
+                //optionsBuilder.UseSqlServer(
+                //    builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
+                //        sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
+                optionsBuilder.UseMySql(
                     builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
-                        sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
+                    new MariaDbServerVersion("15.1"),
+                    mysqlOptions =>
+                    {
+                        mysqlOptions.MigrationsAssembly(migrationsAssembly);
+                        // You can configure MySQL-specific options here
+                    });
                 options.EnableTokenCleanup = true;
             })
             .AddSigningCredential(signingCertificate);
 
-        builder.Services
-             .AddAuthentication()
-             .AddOpenIdConnect("AAD", "Azure Active Directory", options =>
-             {
-                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                 options.Authority = "https://login.microsoftonline.com/621cb4b2-eeb8-4699-913d-a651c392babd/v2.0";
-                 options.ClientId = "df55658d-e228-4f72-9f11-b60334edb0e2";
-                 options.ClientSecret = "Tkt8Q~gJ9yez1EGA6BqFJfCVWIzM_B.bCAUx8bkB";
-                 options.ResponseType = "code";
-                 options.CallbackPath = new PathString("/signin-aad/");
-                 options.SignedOutCallbackPath = new PathString("/signout-aad/");
-                 options.Scope.Add("email");
-                 options.Scope.Add("offline_access");
-                 options.SaveTokens = true;
-             });
+        //builder.Services
+        //     .AddAuthentication()
+        //     .AddOpenIdConnect("AAD", "Azure Active Directory", options =>
+        //     {
+        //         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        //         options.Authority = "https://login.microsoftonline.com/621cb4b2-eeb8-4699-913d-a651c392babd/v2.0";
+        //         options.ClientId = "df55658d-e228-4f72-9f11-b60334edb0e2";
+        //         options.ClientSecret = "Tkt8Q~gJ9yez1EGA6BqFJfCVWIzM_B.bCAUx8bkB";
+        //         options.ResponseType = "code";
+        //         options.CallbackPath = new PathString("/signin-aad/");
+        //         options.SignedOutCallbackPath = new PathString("/signout-aad/");
+        //         options.Scope.Add("email");
+        //         options.Scope.Add("offline_access");
+        //         options.SaveTokens = true;
+        //     });
 
-        builder.Services.AddAuthentication()
-            .AddFacebook("Facebook",
-               options =>
-               {
-                   options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                   options.AppId = "864396097871039";
-                   options.AppSecret = "11015f9e340b0990b0e50f39dd8a4e9a";
-               });
+        //builder.Services.AddAuthentication()
+        //    .AddFacebook("Facebook",
+        //       options =>
+        //       {
+        //           options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        //           options.AppId = "864396097871039";
+        //           options.AppSecret = "11015f9e340b0990b0e50f39dd8a4e9a";
+        //       });
 
         return builder.Build();
     }
