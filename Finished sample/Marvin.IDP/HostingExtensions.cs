@@ -52,13 +52,8 @@ internal static class HostingExtensions
         //  (string)null,
         //  X509KeyStorageFlags.MachineKeySet);
 
-        var store = new X509Store(StoreName.AuthRoot, StoreLocation.LocalMachine);
-        store.Open(OpenFlags.ReadOnly);
-
-        var signingCertificate = store.Certificates.Find(X509FindType.FindByThumbprint, "e1b784b282e59921a729f630704ef5dadbcc8d22", true).FirstOrDefault();
-
-        store.Close();
-
+        var signingCertificate = CertFinder.FindOrGenerateCertificate("e1b784b282e59921a729f630704ef5dadbcc8d22", StoreName.AuthRoot, StoreLocation.LocalMachine);
+        
         // uncomment if you want to add a UI
         builder.Services.AddRazorPages();
 
@@ -70,7 +65,7 @@ internal static class HostingExtensions
         builder.Services.AddDbContext<IdentityDbContext>(options =>
         {
             options.UseSqlServer(
-                builder.Configuration.GetConnectionString("MarvinIdentityDBConnectionString"));
+                builder.Configuration.GetConnectionString("UserIdentityDBConnectionString"));
         });
 
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
