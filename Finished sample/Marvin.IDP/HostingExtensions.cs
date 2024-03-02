@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Marvin.IDP;
@@ -51,8 +52,8 @@ internal static class HostingExtensions
         //  Convert.FromBase64String(secretResponse.Value.Value),
         //  (string)null,
         //  X509KeyStorageFlags.MachineKeySet);
-
-        var signingCertificate = CertFinder.FindOrGenerateCertificate("e1b784b282e59921a729f630704ef5dadbcc8d22", StoreName.AuthRoot, StoreLocation.LocalMachine);
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        var signingCertificate = CertFinder.FindOrGenerateCertificate("e1b784b282e59921a729f630704ef5dadbcc8d22",isWindows? StoreName.AuthRoot:StoreName.Root, StoreLocation.LocalMachine);
         
         // uncomment if you want to add a UI
         builder.Services.AddRazorPages();
