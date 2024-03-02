@@ -20,6 +20,11 @@ namespace Marvin.IDP.DbContexts
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>()
+            .Property(e => e.Id)
+            .HasColumnName("Id")
+            .HasColumnType("char(36)");
+
+            modelBuilder.Entity<User>()
             .HasIndex(u => u.Subject)
             .IsUnique();
 

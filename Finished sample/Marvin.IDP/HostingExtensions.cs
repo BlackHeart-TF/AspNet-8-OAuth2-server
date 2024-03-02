@@ -64,8 +64,10 @@ internal static class HostingExtensions
 
         builder.Services.AddDbContext<IdentityDbContext>(options =>
         {
-            options.UseSqlServer(
-                builder.Configuration.GetConnectionString("UserIdentityDBConnectionString"));
+            options.UseMySql(
+                builder.Configuration.GetConnectionString("UserIdentityDBConnectionString"),
+                new MariaDbServerVersion("11.2")
+                );
         });
 
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -94,7 +96,7 @@ internal static class HostingExtensions
                 //          sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
                 optionsBuilder.UseMySql(
                     builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
-                    new MariaDbServerVersion("15.1"),
+                    new MariaDbServerVersion("11.2"),
                     mysqlOptions =>
                     {
                         mysqlOptions.MigrationsAssembly(migrationsAssembly);
@@ -110,7 +112,7 @@ internal static class HostingExtensions
                 //        sqlOptions => sqlOptions.MigrationsAssembly(migrationsAssembly));
                 optionsBuilder.UseMySql(
                     builder.Configuration.GetConnectionString("IdentityServerDBConnectionString"),
-                    new MariaDbServerVersion("15.1"),
+                    new MariaDbServerVersion("11.2"),
                     mysqlOptions =>
                     {
                         mysqlOptions.MigrationsAssembly(migrationsAssembly);
