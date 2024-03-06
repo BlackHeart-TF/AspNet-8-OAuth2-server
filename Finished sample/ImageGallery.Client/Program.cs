@@ -2,6 +2,7 @@ using ImageGallery.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.Net.Http.Headers;
 
@@ -26,7 +27,7 @@ builder.Services.AddHttpClient("APIClient", client =>
 
 builder.Services.AddHttpClient("IDPClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:44300/");
+    client.BaseAddress = new Uri(builder.Configuration["IDPAddress"]);
 });
 
 builder.Services.AddAuthentication(options =>

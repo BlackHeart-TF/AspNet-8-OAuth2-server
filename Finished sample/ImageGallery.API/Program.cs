@@ -44,7 +44,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
       //});
       .AddOAuth2Introspection(options =>
       {
-          options.Authority = "https://localhost:44300";
+          options.Authority = builder.Configuration["IDPAddress"];
           options.ClientId = "imagegalleryapi";
           options.ClientSecret = "apisecret";
           options.NameClaimType = "given_name";
