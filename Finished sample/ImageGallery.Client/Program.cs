@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
 {
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.Authority = "https://localhost:44300/";
+    options.Authority = builder.Configuration["IDPAddress"];
     options.ClientId = "imagegalleryclient";
     options.ClientSecret = "secret";
     options.ResponseType = "code";
